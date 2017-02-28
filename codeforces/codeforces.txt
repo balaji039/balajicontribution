@@ -1,1 +1,0 @@
-This is to maintain the files related to codeforces problems.
