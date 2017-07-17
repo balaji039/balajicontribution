@@ -1,0 +1,166 @@
+package main.java;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+
+public class SampleClass {
+	
+	public static void main(String args[])
+	{
+		String test="INSERT INTO rui_paysyain VALUES ("
+				   +"	pay_kb,  "
+				   +"	sya_id,  "
+				   +"	kmk_id  "
+				   +"     )      "
+				   +"select      "
+				   +"  p1.pay_kb,   "
+				   +"  p2.sya_id,   "
+				   +"  p1.kmk_id   "
+				  +"FROM paykbn p1,"
+				  + "    paykbn p2"
+				  +"     ";
+		
+		String[] p = test.split("VALUES.+\\(");
+		String insertTable = (p[0].split("INTO"))[1].trim();
+		String[] insertInter = p[1].split("\\)");
+		String[] insertCol = insertInter[0].split(",");
+		Queue<String> insertQueue=new LinkedList<String>();
+		Queue<String> selectQueue=new LinkedList<String>();
+		Queue<String> seltabQueue=new LinkedList<String>();
+		String[] selectRem = insertInter[1].split("select");
+		//System.out.println(selectRem.length);
+		String[] rem = selectRem[1].split("FROM");
+		String[] selectCol = rem[0].split(",");
+		String res[]=rem[1].split("where");
+		String[] selectTable=res[0].split(",");
+		List<String> alias=new ArrayList<String>();
+		Map<String,String> aliasmap=new HashMap<>();
+		for(String ins:insertCol)
+		{
+			System.out.println(ins.trim());
+			insertQueue.add(ins.trim());
+		}
+		for(String sel:selectCol)
+		{
+			String sel1=sel.trim();
+			String[] res2=sel1.split("\\.");
+			alias.add(res2[0]);
+			selectQueue.add(res2[1]);
+		}
+		for(String tab:selectTable)
+		{
+			
+			String tp = tab.trim();
+			for(String a:alias)
+			{
+				if(tp.contains(a))
+				{
+					aliasmap.put(a, tp.split(a)[0]);
+					tp=tp.split(a)[0];
+					break;
+				}
+			}
+			seltabQueue.add(tp);
+		}
+		//if(insertQueue.size()==selectQueue.size())
+		//{
+		String inte[]=insertTable.split("_");
+		boolean order=true;
+		String tabName=new String();
+		for(String p1:inte)
+		{
+			if(order==true)
+			{
+				tabName=p1;
+				order=false;
+				continue;
+			}
+			char temp=Character.toUpperCase(p1.charAt(0));
+			tabName=tabName+temp+p1.substring(1);
+		}
+	   final String tableName12=tabName;
+		Set<String> testSet=new HashSet<String>();
+			int size=insertQueue.size();
+			for(int i=0;i<size;i++)
+			{
+				String insCol=insertQueue.remove();
+				String ins[]=insCol.split("_");
+				String temp=new String();
+				temp=tabName+".set";
+				for(String j:ins)
+				{
+			        char tempo=j.charAt(0);
+			        temp=temp+Character.toUpperCase(tempo)+j.substring(1);
+				}
+				System.out.println(temp);
+				if(seltabQueue.size()>1 && aliasmap.size()!=0)
+				{
+					int size1=selectQueue.size();
+					for(int j=0;j<size1;j++)
+					{
+						
+					}
+				testSet.add(temp);
+			}
+			
+			if(testSet.contains("ruiPaysyain.setPayKb"))
+			{
+				System.out.println(true);
+			}
+		//}
+//		for(String ta:tab)
+//		{
+//			System.out.println(ta.trim());
+//		}
+//		for(String test12:tas
+//		{
+//			System.out.println(test12.trim());
+//		}
+//		System.out.println(t);
+		//System.out.println(test);
+		//String[] p2 = p[1].split("FROM");
+			try {
+				List<String> newList=new ArrayList<String>();
+				Files.lines(Paths.get("C://Users//15-bc009TX//workspace//Automator//src//main//java//test.txt")).forEach(fileLine -> 
+				{
+					String result=fileLine.trim();
+					String[] res12=result.split("\\(");
+					String insArray[]=res12[0].split("\\.");
+					String selArray[]=res12[1].split("\\.");
+					System.out.println(selArray.length);
+					//System.out.println(res12.length);
+					if(tableName12.toLowerCase().contains(insArray[0].toLowerCase()))
+					{
+						String res123=tableName12+"."+insArray[1]+"("+selArray[0]+"."+selArray[1]+"("+"))";
+						newList.add(res123);
+					}
+					System.out.println(fileLine);
+					//newList.add(fileLine);
+				});
+				for(String l:newList)
+				{
+					System.out.println("*********"+l);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			String test23="thisisruipaysyain".toLowerCase();
+			if(test23.contains("ruipaysyain".toLowerCase()))
+			{
+				System.out.println(true);
+			}
+		
+	}
+
+}
