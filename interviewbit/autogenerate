@@ -1,5 +1,3 @@
-package main.java;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,11 +10,61 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-public class SampleClass {
-	
+import com.worksap.company.hue.com.bizcore.payroll.conv.business_common.util.BcStringUtil;
+
+import lombok.Data;
+
+public class TestMain {
+	private int t;
+	TestMain(int p)
+	{
+		t=p;
+	}
+	public void print(int n)
+	{
+		if(n==0)
+		{
+			return;
+		}
+		print(--n);
+		System.out.println(n);
+	}
 	public static void main(String args[])
 	{
-		String test="INSERT INTO rui_paysyain VALUES ("
+		//TestMain t=new TestMain(5);
+		//t.print(5);
+//	    List<TestMain> testList=new ArrayList<TestMain>();
+//	    testList.add(new TestMain(5));
+//	    testList.add(new TestMain(5));
+//	    testList.stream().map(test -> test.getT()).distinct().forEach(tet -> System.out.println("inside stream"+tet));
+//		int p2=12;
+//		String aa=new BcDateFormatter("yyyy/mm/dd hh:mm:ss").getFormattedStr(TcsCalendar.getDbCalendar());
+//		String l="";
+//		System.out.println(aa);
+//		String pps = aa.replaceAll("/", "-");
+//		//pps=pps+".00";
+//		//System.out.println(pps);
+//		//Timestamp.valueOf(aa);
+//	    //Date date
+//		ZonedDateTime tt = ZonedDateTimeUtil.valueOf(Timestamp.valueOf(pps));
+//		System.out.println(tt);
+//		//System.out.println(l+p2);
+//		List<Integer> p=new ArrayList<Integer>();
+//		List<Integer> p1=p.stream().collect(Collectors.toList());
+//		System.out.println(p1.contains(1));
+//		TestMain t1=new TestMain();
+//		System.out.println(t1.t);
+//		String s="stuki=";
+//		int[] stuki=new int[3];
+//		stuki[0]=12;
+//		stuki[1]=23;
+//		stuki[2]=32;
+//		for(int i=0;i<stuki.length;i++)
+//		{
+//			s=s+stuki[i];
+//		}
+//		System.out.println(s);
+	    String test="INSERT INTO rui_paysyain VALUES ("
 				   +"	pay_kb,  "
 				   +"	sya_id,  "
 				   +"	kmk_id  "
@@ -24,9 +72,10 @@ public class SampleClass {
 				   +"select      "
 				   +"  p1.pay_kb,   "
 				   +"  p2.sya_id,   "
-				   +"  p1.kmk_id   "
+				   +"  p3.kmk_id   "
 				  +"FROM paykbn p1,"
-				  + "    paykbn p2"
+				  +"    rui_paysyain p2,"
+				  + "   rui_paykbn p3"
 				  +"     ";
 		
 		String[] p = test.split("VALUES.+\\(");
@@ -36,41 +85,75 @@ public class SampleClass {
 		Queue<String> insertQueue=new LinkedList<String>();
 		Queue<String> selectQueue=new LinkedList<String>();
 		Queue<String> seltabQueue=new LinkedList<String>();
+		List<String> alias=new ArrayList<String>();
 		String[] selectRem = insertInter[1].split("select");
 		//System.out.println(selectRem.length);
 		String[] rem = selectRem[1].split("FROM");
 		String[] selectCol = rem[0].split(",");
 		String res[]=rem[1].split("where");
 		String[] selectTable=res[0].split(",");
-		List<String> alias=new ArrayList<String>();
+		Map<String,String> aliasColMap=new HashMap<String,String>();
 		Map<String,String> aliasmap=new HashMap<>();
+		List<String> generatedList=new ArrayList<String>();
 		for(String ins:insertCol)
 		{
-			System.out.println(ins.trim());
+			//System.out.println(ins.trim());
 			insertQueue.add(ins.trim());
 		}
 		for(String sel:selectCol)
 		{
 			String sel1=sel.trim();
 			String[] res2=sel1.split("\\.");
-			alias.add(res2[0]);
-			selectQueue.add(res2[1]);
+			if(res2.length==1)
+			{
+				aliasColMap.put(res2[0],"X");
+				selectQueue.add(res2[0]);
+			}
+			else
+			{
+				aliasColMap.put(res2[1],res2[0]);
+				selectQueue.add(res2[1]);
+			}
 		}
 		for(String tab:selectTable)
 		{
 			
 			String tp = tab.trim();
-			for(String a:alias)
+			//System.out.println(tp.trim());
+			//System.out.println(tp.split(" ")[0]);
+			String tps[]=tp.split(" ");
+			//System.out.println("*****"+tps[0]+"  "+tps[1]);
+			String ali="";
+			if(tps.length>1)
 			{
-				if(tp.contains(a))
-				{
-					aliasmap.put(a, tp.split(a)[0]);
-					tp=tp.split(a)[0];
-					break;
-				}
+					tp=tps[0];
+					ali=tps[1];
 			}
-			seltabQueue.add(tp);
+			String  sele[]=tp.split("_");
+			boolean order1=true;
+			String tabName1=new String();
+			for(String p1:sele)
+			{
+				if(order1==true)
+				{
+					tabName1=p1;
+					order1=false;
+					continue;
+				}
+				char temp=Character.toUpperCase(p1.charAt(0));
+				tabName1=tabName1+temp+p1.substring(1);
+			}
+			if(BcStringUtil.compare(ali, "")==0)
+			{
+				aliasmap.put("X",tabName1);
+			}
+			else
+			{
+				aliasmap.put(ali, tabName1);
+			}
+			seltabQueue.add(tabName1);
 		}
+		//System.out.println(aliasmap);
 		//if(insertQueue.size()==selectQueue.size())
 		//{
 		String inte[]=insertTable.split("_");
@@ -101,20 +184,36 @@ public class SampleClass {
 			        char tempo=j.charAt(0);
 			        temp=temp+Character.toUpperCase(tempo)+j.substring(1);
 				}
-				System.out.println(temp);
-				if(seltabQueue.size()>1 && aliasmap.size()!=0)
+				temp=temp+"(";
+				String col=selectQueue.remove();
+				String all=aliasColMap.get(col);
+				String selTable=aliasmap.get(all);
+				String sel3[]=col.split("_");
+				String temp3=new String();
+				temp3=temp+selTable+".get";
+				if(sel3.length==1)
 				{
-					int size1=selectQueue.size();
-					for(int j=0;j<size1;j++)
+					temp3=temp3+sel3[0]+")";
+				}
+				else
+				{
+					for(String j:sel3)
 					{
-						
+						char tempo=j.charAt(0);
+						temp3=temp3+Character.toUpperCase(tempo)+j.substring(1);
 					}
-				testSet.add(temp);
-			}
-			
-			if(testSet.contains("ruiPaysyain.setPayKb"))
-			{
-				System.out.println(true);
+				}
+				temp3=temp3+"()"+")";
+				generatedList.add(temp3);
+//				System.out.println(temp3);
+//				if(seltabQueue.size()>1 && aliasmap.size()!=0)
+//				{
+//					int size1=selectQueue.size();
+//					for(int j=0;j<size1;j++)
+//					{
+//						
+//					}
+//				testSet.add(temp);
 			}
 		//}
 //		for(String ta:tab)
@@ -130,37 +229,58 @@ public class SampleClass {
 		//String[] p2 = p[1].split("FROM");
 			try {
 				List<String> newList=new ArrayList<String>();
-				Files.lines(Paths.get("C://Users//15-bc009TX//workspace//Automator//src//main//java//test.txt")).forEach(fileLine -> 
+			
+				Files.lines(Paths.get("C:\\Hue\\WorkSpace\\Develop\\TestSampl\\src\\sqlstring.txt")).forEach(fileLine -> 
 				{
 					String result=fileLine.trim();
+					
 					String[] res12=result.split("\\(");
 					String insArray[]=res12[0].split("\\.");
 					String selArray[]=res12[1].split("\\.");
-					System.out.println(selArray.length);
+					newList.add(result);
+					//System.out.println(selArray.length);
 					//System.out.println(res12.length);
-					if(tableName12.toLowerCase().contains(insArray[0].toLowerCase()))
-					{
-						String res123=tableName12+"."+insArray[1]+"("+selArray[0]+"."+selArray[1]+"("+"))";
-						newList.add(res123);
-					}
-					System.out.println(fileLine);
+//					if(tableName12.toLowerCase().contains(insArray[0].toLowerCase()))
+//					{
+//						String res123=tableName12+"."+insArray[1]+"("+selArray[0]+"."+selArray[1];
+//						newList.add(res123);
+//					}
+					//System.out.println(fileLine);
 					//newList.add(fileLine);
 				});
-				for(String l:newList)
+				boolean b=true;
+				String record=new String();
+				for(String temp:generatedList)
 				{
-					System.out.println("*********"+l);
+					b=false;
+					for(String temp2:newList)
+					{
+						if(BcStringUtil.compare(temp, temp2)==0)
+						{
+							System.out.println(temp2+"  record matched and is correct");
+							b=true;
+							break;
+						}
+						record=temp2;
+					}
+					if(b==false)
+					{
+						System.out.println("record mismatch  "+temp+"  no match found for this "+record);
+					}
 				}
+				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
-			String test23="thisisruipaysyain".toLowerCase();
-			if(test23.contains("ruipaysyain".toLowerCase()))
+			String test23="ruipaysyain.setPaykb(paykbn.getPaykb)".toLowerCase();
+			if(test23.contains("ruipaysyain.setPaykb(paykbn2.getPaykb)".toLowerCase()))
 			{
 				System.out.println(true);
 			}
 		
 	}
+	}
 
-}
+
